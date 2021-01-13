@@ -30,17 +30,17 @@ const  DetailScreen = ({ route }) => {
     }
     
     return(
-        <View style={{ backgroundColor:'white', borderWidth:1, padding: 10, margin: 5 }}>
-            <View style={{ flexDirection: 'row' }}>
+        <View style={{ backgroundColor:'white', borderWidth:1, padding: 15, margin: 5 }}>
+            <View style={{ flexDirection: 'column', marginTop: 5 }}>
                 <Text style={{ fontWeight: 'bold'}} >Name: </Text>
                 <Text>{res.name}</Text>
             </View>
-            <View style={{ flexDirection: 'row' }}>
+            <View style={{ flexDirection: 'column', marginTop: 5 }}>
             <Text style={{ fontWeight: 'bold'}} >Nasa jpl url: </Text>
             <Text>{res.nasa_jpl_url}</Text>
             </View>
 
-            <View style={{ flexDirection: 'row' }}>
+            <View style={{ flexDirection: 'column',marginTop: 5 }}>
             <Text style={{ fontWeight: 'bold'}} >Is potentially hazardous asteroid: </Text>
             <Text>{JSON.stringify(res.is_potentially_hazardous_asteroid)}</Text>
             </View>
