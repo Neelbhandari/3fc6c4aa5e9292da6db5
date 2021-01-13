@@ -13,17 +13,20 @@ class HomeScreen extends Component{
             AsteroidDataArray:[],
             isLoading:false,
             err:'',
-            AsteroidData:''
+            AsteroidData:'',
+            invalid: false
         }
     }
 
     onSerchAsteroidData = async (AsId) => {
         
+        this.setState({ isLoading: true });
+
         await NasaApi.get(`neo/rest/v1/neo/${AsId}?api_key=hWpTAGb7O2QUcHjqwCMEalvOqiDknL3tsAwxVgba`).then( response =>{
             
             //console.log('response -------------', response.data);
 
-            this.setState({ AsteroidData: response.data });
+            this.setState({ AsteroidData: response.data, isLoading: false, AsteroidDataArray: [] });
 
             this.props.navigation.navigate('Detail', { AID: response.data.id });
          
@@ -31,26 +34,29 @@ class HomeScreen extends Component{
         }).catch(e=>{
             //console.log('response -------------', e);
 
-            this.setState({ err: e });
+            this.setState({ err: e, invalid: true, isLoading: false, AsteroidDataArray: [] });
           
         })
 
     }
 
     onRandomAsteroid = async () =>{
+        
+        this.setState({ invalid: false, isLoading: true })
        // console.log('Called');
         await NasaApi.get(`neo/rest/v1/neo/browse?api_key=DEMO_KEY`).then(response=>{
 
             //console.log('Random Asteroid Data ', response.data.near_earth_objects);
 
             this.setState({
-                AsteroidDataArray: response.data.near_earth_objects
+                AsteroidDataArray: response.data.near_earth_objects,
+                isLoading:false
             })
 
 
         }).catch( e => {
             //console.log('Error', e);
-            this.setState({ err: e });
+            this.setState({ err: e, isLoading:false });
         })
 
     }
@@ -61,7 +67,8 @@ class HomeScreen extends Component{
             return(
          
                 <TouchableOpacity
-                    style={{ backgroundColor:'#ff1717', padding: 10, }}
+                    disabled={false}
+                    style={{ backgroundColor:'purple', padding: 10, }}
                     onPress={()=> this.onSerchAsteroidData(this.state.AsteroidId)}
                 >
                     <Text style= {{ color: 'white', alignSelf:'center' }}>Search Asteroid</Text>
@@ -72,6 +79,7 @@ class HomeScreen extends Component{
         return(
 
             <TouchableOpacity
+                    disabled={true}
                     style={{ backgroundColor:'grey', padding: 10, }}
                     onPress={()=> this.onSerchAsteroidData(this.state.AsteroidId)}
                 >
@@ -83,6 +91,37 @@ class HomeScreen extends Component{
         )
     }
 
+    onRandFlatList(){
+        if(this.state.isLoading){
+            return <ActivityIndicator size="large" color="#3a7dcf" />
+        }
+        return(
+            <FlatList
+            data={this.state.AsteroidDataArray}
+            keyExtractor= { ( item, index ) => index.toString() }
+            renderItem={ ({ item }) =>{
+                return(
+                    <View>
+                        <TouchableOpacity 
+                        onPress={ ()=> this.props.navigation.navigate( 'Detail',{ AID: item.id } ) }
+                            style={{
+                                marginHorizontal: 10,
+                                borderWidth: 1,
+                                borderColor:'grey', 
+                                padding: 5,
+                                margin: 5
+                            }}>
+
+                            <Text style={{ fontSize: 18, alignSelf:'center' }}>{item.id}</Text>
+                        </TouchableOpacity>
+                        
+                    </View>
+                );
+            } }
+        />
+        )
+    }
+
 
     render(){
         return(
@@ -90,7 +129,7 @@ class HomeScreen extends Component{
 
                 <View style={{ backgroundColor:'white', padding: 10 }}>
                     <TextInput 
-                        style={{ borderWidth:1, borderColor:'black', marginTop:10 }}
+                        style={{ borderWidth:1, borderColor:'black', marginTop:10, padding: 10 }}
                         placeholder='Enter Asteroid Id'
                         value={this.state.AsteroidId}
                         onChangeText={(text)=> this.setState({ AsteroidId: text })}
@@ -100,38 +139,18 @@ class HomeScreen extends Component{
                     {this.onRenderButton()}
                 </View>
                 
-
+            
                 <View style={{ marginTop: 10, marginHorizontal: 10, padding:5 }}>
-                    <Button
+                    <TouchableOpacity
                         onPress={this.onRandomAsteroid}
-                        title='Random Asteroid'
-                    />
+                        style={{ backgroundColor:'purple', padding: 10, }}
+                    >
+                        <Text style= {{ color: 'white', alignSelf:'center' }}>Random Asteroid</Text>
+                    </TouchableOpacity>
                 </View>
-
+                {this.state.invalid ? <Text style={{ alignSelf:'center', color:'red', fontWeight: 'bold' }}>Asteroid Not Found</Text> : null}
                 <View>
-                    <FlatList
-                        data={this.state.AsteroidDataArray}
-                        keyExtractor= { ( item, index ) => index.toString() }
-                        renderItem={ ({ item }) =>{
-                            return(
-                                <View>
-                                    <TouchableOpacity 
-                                    onPress={ ()=> this.props.navigation.navigate( 'Detail',{ AID: item.id } ) }
-                                        style={{
-                                            marginHorizontal: 10,
-                                            borderWidth: 1,
-                                            borderColor:'grey', 
-                                            padding: 5,
-                                            margin: 5
-                                        }}>
-
-                                        <Text style={{ fontSize: 18, alignSelf:'center' }}>{item.id}</Text>
-                                    </TouchableOpacity>
-                                    
-                                </View>
-                            );
-                        } }
-                    />
+                   {this.onRandFlatList()}
                 </View>
 
         </View>
